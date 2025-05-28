@@ -11,8 +11,9 @@ import RegistrationForm from "./forms/auth/RegistrationForm.jsx";
 import AuthForm from "./forms/auth/AuthForm.jsx";
 import EmployeeList from "./pages/employee/EmployeeList.jsx";
 import EmployeeCreditList from "./components/DealsOfEmployee.jsx";
+import HomePage from "./pages/homePage/HomePage.jsx";
 function App() {
-    const [role] = useState('employee'); // Замените на реальную роль пользователя
+    const [role] = useState(''); // Замените на реальную роль пользователя
 
     return (
         <div>
@@ -25,10 +26,8 @@ function App() {
                             <Route path="/applications" element={<ApplicationsList role={role} />} />
                             <Route path="/credits" element={<CreditList role={role} />} />
                             <Route path="/credits/:id" element={<CreditDetailsPage role={role} />} />
-                            <Route path="/cr" element={<CreditDetailsPage role={role} />} />
-                            <Route path="/c" element={<ApplyCreditForm />} />
-                            <Route path="/register" element={<RegistrationForm />}/>
-                            <Route path="/auth" element={<AuthForm />}/>
+                            <Route path="/" element={<HomePage />}/>
+
                             {
                                 role === 'admin' && (<Route path="/employees" element={<EmployeeList />}/>)
 
