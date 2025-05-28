@@ -10,7 +10,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister }) => {
     };
 
     return (
-        <Card title={<p>Авторизация</p>} style={{ width: '500px' }}>
+
             <Form form={form} layout="vertical" style={{ width: 400, margin: '0 auto', padding: '12px' }} onFinish={handleSubmit}>
                 <Form.Item label="Логин" name="login" rules={[{ required: true, message: 'Укажите логин!' }]}>
                     <Input placeholder="Введите логин" />
@@ -32,7 +32,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister }) => {
                     </Button>
                 </div>
             </Form>
-        </Card>
+
     );
 };
 
