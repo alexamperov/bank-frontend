@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card } from 'antd';
-
+import {Form, Input, Button, Card, message} from 'antd';
+import {signUp} from "../../api.js";
 const RegistrationForm = ({ onRegister, onSwitchToLogin }) => {
     const [form] = Form.useForm();
 
-    const handleSubmit = (values) => {
-        onRegister(values);
-        form.resetFields();
+    const handleSubmit = async (values) => {
+        try {
+            // Вызываем функцию signUp с данными формы
+            const response = await signUp(values);
+            console.log(values)
+            // Если регистрация успешна, показываем уведомление и переключаемся на форму авторизации
+            message.success(response.message); // Показываем сообщение "verification code sent"
+            form.resetFields(); // Очищаем поля формы
+            onSwitchToLogin(); // Переключаемся на форму авторизации
+        } catch (error) {
+            // Если произошла ошибка, выводим сообщение об ошибке
+            message.error('Ошибка при регистрации. Попробуйте снова.');
+            console.error('Ошибка при регистрации:', error);
+        }
     };
 
     return (
-        <Card title={<p>Регистрация</p>} style={{ width: '500px' }}>
             <Form form={form} layout="vertical" style={{ width: 400, margin: '0 auto', padding: '12px' }} onFinish={handleSubmit}>
-                <Form.Item label="Название" name="name" rules={[{ required: true, message: 'Укажите название!' }]}>
+                <Form.Item label="Название" name="username" rules={[{ required: true, message: 'Укажите название!' }]}>
                     <Input placeholder="Введите название" />
                 </Form.Item>
 
@@ -55,7 +65,7 @@ const RegistrationForm = ({ onRegister, onSwitchToLogin }) => {
                 </Form.Item>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" onClick={handleSubmit}>
                         Зарегистрироваться
                     </Button>
                 </div>
@@ -66,7 +76,6 @@ const RegistrationForm = ({ onRegister, onSwitchToLogin }) => {
                     </Button>
                 </div>
             </Form>
-        </Card>
     );
 };
 
