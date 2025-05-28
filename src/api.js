@@ -58,6 +58,7 @@ export const getMe = async () => {
     }
 };
 
+// APPLICATIONS
 
 export const createApplication = async (applicationData) => {
     try {
@@ -76,5 +77,31 @@ export const getOwnApplications = async () => {
     } catch (error) {
         console.error("Ошибка при получении списка заявок:", error);
         throw error; // Передаем ошибку дальше
+    }
+};
+
+
+
+// DEALS
+export // Получение списка сделок
+const getDeals = async () => {
+    try {
+        const response = await apiClient.get('/deals');
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+
+// DEALS
+export // Получение списка сделок
+const getDealsOfUser = async (userID) => {
+    try {
+        const response = await apiClient.get(`/deals?user_id=${userID}`);
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
     }
 };

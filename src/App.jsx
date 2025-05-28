@@ -1,6 +1,6 @@
 
 import './App.css'
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import NavigationPanel from "./components/navbar/NavBar.jsx";
 import { Route, Routes} from "react-router-dom";
 import ApplicationsList from "./pages/appliesList/AppliesList.jsx";
@@ -12,9 +12,22 @@ import AuthForm from "./forms/auth/AuthForm.jsx";
 import EmployeeList from "./pages/employee/EmployeeList.jsx";
 import EmployeeCreditList from "./components/DealsOfEmployee.jsx";
 import HomePage from "./pages/homePage/HomePage.jsx";
+import {parseJwt} from "./auth.js";
 function App() {
-    const [role] = useState(''); // Замените на реальную роль пользователя
+    const [role, setRole] = useState(''); // Замените на реальную роль пользователя
+    useEffect(() => {
+        // Получаем токен из localStorage
+        const token = localStorage.getItem('authToken');
 
+        if (token) {
+            // Парсим токен и извлекаем роль
+            const decodedToken = parseJwt(token);
+
+            if (decodedToken && decodedToken.role) {
+                setRole(decodedToken.role); // Устанавливаем роль пользователя
+            }
+        }
+    }, []);
     return (
         <div>
             <NavigationPanel role={role} />
