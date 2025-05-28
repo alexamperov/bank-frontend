@@ -26,7 +26,7 @@ const PaymentCard = ({ payment }) => (
                 <Paragraph><strong>Дата платежа:</strong> {moment(payment.paymentDate).format('DD.MM.YYYY')}</Paragraph>
             </Col>
             <Col span={12} style={{textAlign: 'left'}}>
-                <Paragraph><strong>Метод оплаты:</strong> {payment.paymentMethod}</Paragraph>
+                <Paragraph><strong>Метод оплаты:</strong> {payment.method}</Paragraph>
             </Col>
         </Row>
     </Card>

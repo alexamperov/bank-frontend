@@ -1,66 +1,46 @@
+// forms/payForm/PayForm.jsx
 import React, { useState } from 'react';
-import { Modal, Button, Input, Space } from 'antd';
+import { Modal, Input, Button, Space } from 'antd';
 
-const SalaryModal = () => {
-    const [isModalVisible, setIsModalVisible] = useState(false); // Состояние видимости модального окна
-    const [salary, setSalary] = useState(''); // Состояние для хранения значения зарплаты
+const PayForm = ({ isVisible, onCancel, onPay, currency }) => {
+    const [amount, setAmount] = useState('');
 
-    // Функция для открытия модального окна
-    const showModal = () => {
-        setIsModalVisible(true);
-    };
-
-    // Функция для закрытия модального окна
-    const handleCancel = () => {
-        setIsModalVisible(false);
-        setSalary(''); // Очищаем поле зарплаты при закрытии
-    };
-
-    // Функция для обработки выплаты зарплаты
-    const handlePay = () => {
-        if (!salary) {
-            alert('Пожалуйста, введите сумму зарплаты.');
-            return;
+    const handleSubmit = () => {
+        if (!amount) {
+            return alert('Введите сумму!');
         }
-        alert(`Зарплата в размере ${salary} успешно выплачена.`);
-        setIsModalVisible(false);
-        setSalary(''); // Очищаем поле после выплаты
+        onPay(amount); // Передаем сумму в родительский компонент
+        setAmount('');
     };
 
     return (
-        <div style={{ padding: '24px', width: '300px', margin: '0 auto' }}>
-            {/* Кнопка для открытия модального окна */}
-            <Button type="primary" onClick={showModal}>
-                Открыть модальное окно
-            </Button>
-
-            {/* Модальное окно */}
-            <Modal
-                title="Выплата зарплаты"
-                visible={isModalVisible}
-                onCancel={handleCancel}
-                footer={[
-                    <Button key="back" onClick={handleCancel}>
-                        Назад
-                    </Button>,
-                    <Button key="pay" type="primary" onClick={handlePay}>
-                        Выплатить
-                    </Button>,
-                ]}
-            >
-                <Space direction="vertical" style={{ width: '100%' }}>
-                    <label style={{ fontWeight: 'bold' }}>Зарплата:</label>
-                    <Input
-                        placeholder="Введите сумму"
-                        value={salary}
-                        onChange={(e) => setSalary(e.target.value)}
-                        type="number"
-                        min="0"
-                    />
-                </Space>
-            </Modal>
-        </div>
+        <Modal
+            title="Внесение платежа"
+            open={isVisible}
+            onCancel={onCancel}
+            footer={[
+                <Button key="back" onClick={onCancel}>
+                    Назад
+                </Button>,
+                <Button key="pay" type="primary" onClick={handleSubmit}>
+                    Выплатить
+                </Button>,
+            ]}
+        >
+            <Space direction="vertical" style={{ width: '100%' }}>
+                <label style={{ fontWeight: 'bold' }}>
+                    Сумма платежа ({currency}): {/* Валюта отображается из пропсов */}
+                </label>
+                <Input
+                    placeholder={`Введите сумму в ${currency}`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    type="number"
+                    min="0"
+                />
+            </Space>
+        </Modal>
     );
 };
 
-export default SalaryModal;
+export default PayForm;

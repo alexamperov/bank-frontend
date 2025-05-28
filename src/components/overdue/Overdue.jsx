@@ -27,7 +27,7 @@ const OverdueCard = ({ overdue }) => (
                 <Paragraph><strong>Дата начисления:</strong> {moment(overdue.chargeDate).format('DD.MM.YYYY')}</Paragraph>
             </Col>
             <Col span={12} style={{textAlign: 'left'}}>
-                <Paragraph><strong>Договор ID:</strong> {overdue.creditId}</Paragraph>
+                <Paragraph><strong>Договор ID:</strong> {overdue.deal_id}</Paragraph>
             </Col>
         </Row>
     </Card>

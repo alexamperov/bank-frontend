@@ -1,180 +1,119 @@
-// Детали кредита:
-//      Идентификатор
-//      Статус: [Погашен/Не погашен]
-//      Сумма
-//      Валюта
-//      Процентная ставка
-//      Дата выдачи
-//      Дата возврата
-//      Остаток по кредиту
-//      Крайний срок выплаты по кредиту
-//      Список платежей
-//      Под капотом:
-//         [Для пользователя|Администратора]: Идентификатор работника
-//         [Для работника|Администратора]: Идентификатор пользователя
-//      Список платежей
-//      Список просрочек
-
-import React, {useEffect, useState} from 'react';
-import { Card, Typography, Row, Col, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import {Card, Typography, Row, Col, Button, message} from 'antd';
 import moment from 'moment';
-import HistoryPaymentsTabs from "../../components/historyPaymentTabs/historyPaymentsTabs.jsx";
-import {useNavigate} from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
+import {getDealByID, getPayments, getDelays, createPayment} from '../../api';
+import PayForm from '../../forms/payForm';
+import HistoryPaymentsTabs from "../../components/historyPaymentTabs/historyPaymentsTabs.jsx"; // Исправленный импорт формы
 
 const { Title, Paragraph } = Typography;
 
-const creditDetails = {
-    id: 1,
-    status: 'Не погашен',
-    amount: 150000,
-    currency: '₽',
-    interestRate: '12%',
-    issueDate: '2023-05-15',
-    returnDate: '2024-05-15',
-    remainingAmount: 120000,
-    deadline: '2024-06-10',
-    payments: [
-        {
-            id: 1,
-            status: 'Успешно',
-            amount: 15000,
-            paymentMethod: 'Банковский перевод',
-            paymentDate: '2023-06-15',
-            creditId: 1,
-        },
-        {
-            id: 2,
-            status: 'Успешно',
-            amount: 15000,
-            paymentMethod: 'Карта',
-            paymentDate: '2023-07-15',
-            creditId: 1,
-        },
-        {
-            id: 3,
-            status: 'Не успешно',
-            amount: 15000,
-            paymentMethod: 'Наличные',
-            paymentDate: '2023-08-15',
-            creditId: 1,
-        },
-    ],
-    overdue: [
-        {
-            id: 1,
-            status: 'Не оплачено',
-            amount: 15000,
-            chargeDate: '2023-09-01',
-            creditId: 1,
-        },
-        {
-            id: 2,
-            status: 'Оплачено',
-            amount: 15000,
-            chargeDate: '2023-09-10',
-            creditId: 1,
-        },
-    ],
-    employeeId: 2001,
-    userId: 1001,
-};
-
 const CreditDetailsPage = ({ role = 'admin' }) => {
-
-    const [credit, setCredit] = useState({})
-    const [overdue, setOverdue] = useState([])
-    const [payments, setPayments] = useState([])
-
+    const [credit, setCredit] = useState(null);
+    const [payments, setPayments] = useState([]);
+    const [overdue, setOverdue] = useState([]);
+    const [isModalVisible, setIsModalVisible] = useState(false); // Состояние для модального окна
     const navigate = useNavigate();
+    const { id } = useParams();
 
     useEffect(() => {
-        setCredit(creditDetails)
-        setPayments(creditDetails.payments)
-        setOverdue(creditDetails.overdue);
-    }, []);
+        const fetchData = async () => {
+            try {
+                const dealData = await getDealByID(id);
+                setCredit(dealData);
+                setPayments(await getPayments(id));
+                setOverdue(await getDelays(id));
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+            }
+        };
+        fetchData();
+    }, [id]);
+
+    if (!credit) {
+        return <p style={{ textAlign: 'center', fontSize: 16 }}>Загрузка данных...</p>;
+    }
+
+    // Функция для обработки платежа
+    const handlePay = async (amount) => {
+        try {
+            // Здесь вызовите API для внесения платежа, например:
+            // await apiClient.post('/payments', { deal_id: id, amount });
+            createPayment(id, amount ).then(() => {
+                getPayments(id).then(res => {setPayments(res)});
+                setIsModalVisible(false);
+            })
+            message.success(`Платеж на сумму ${amount} ${credit.currency} успешно внесен`);
+            // После успешного платежа обновите данные
+            const updatedPayments = await getPayments(id);
+            setPayments(updatedPayments);
+            setIsModalVisible(false);
+        } catch (error) {
+            message.error('Ошибка при внесении платежа');
+            console.error('Ошибка:', error);
+        }
+    };
+
     return (
         <div style={{ padding: '24px', width: '900px', margin: '0 auto' }}>
-            <div style={{display:"block", textAlign: "left", marginBottom: '25px'}}>
-                <Button key="back" onClick={() => navigate(-1)}>
-                    Назад
-                </Button>
+            {/* Кнопка "Назад" */}
+            <div style={{ display: "block", textAlign: "left", marginBottom: '25px' }}>
+                <Button onClick={() => navigate(-1)}>Назад</Button>
             </div>
 
-            {/* Верхняя карточка */}
+            {/* Карточка кредита */}
             <Card
-                style={{
-                    marginBottom: 24,
-                    borderRadius: 12,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                }}
+                style={{ marginBottom: 24, borderRadius: 12, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}
+                title={<span>Договор №{credit.id}</span>}
                 extra={
-                    <div style={{ display: 'flex',  justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <strong>Статус:</strong>
-                        <span style={{textAlign: 'left',color: creditDetails.status === 'Не погашен' ? 'red' : 'green'}}>
-                            {creditDetails.status}
+                        <span style={{ color: credit.status === 'active' ? 'red' : 'green' }}>
+                            {credit.status === 'active' ? 'Не погашен' : 'Погашен'}
                         </span>
-                        {creditDetails.status === 'Не погашен' ? (
-                            role === 'user' ? (
-                                <Button type="primary" size="middle" style={{ borderRadius: 4 }}>
-                                    Внести платёж
-                                </Button>
-                            ) : role === 'employee' ? (
-                                <Button type="primary" size="middle" style={{ borderRadius: 4 }}>
-                                    Начислить просрочку
-                                </Button>
-                            ) : null
-                        ) : null}
+                        {credit.status === 'active' && role === 'user' && (
+                            <Button type="primary" onClick={() => setIsModalVisible(true)}>
+                                Внести платёж
+                            </Button>
+                        )}
+                        {credit.status === 'active' && role === 'employee' && (
+                            <Button type="primary">Начислить просрочку</Button>
+                        )}
                     </div>
-                    }
-                title={
-                    <div style={{ display: 'flex',  justifyContent: 'left', alignItems: 'center', gap: '10px' }}>
-                        <span>Договор №{creditDetails.id}</span>
-                    </div>}>
+                }
+            >
                 <Row gutter={20}>
-                    <Col span={12} style={{textAlign: 'left'}}>
-                    <Paragraph>
-                            <strong>Сумма кредита:</strong> {credit.amount} ₽
-                        </Paragraph>
-                        <Paragraph>
-                            <strong>Дата выдачи:</strong> {moment(credit.issueDate).format('DD.MM.YYYY')}
-                        </Paragraph>
-                        <Paragraph>
-                            <strong>Остаток:</strong> {credit.remainingAmount} ₽
-                        </Paragraph>
+                    <Col span={12}>
+                        <Paragraph><strong>Сумма кредита:</strong> {credit.sum} {credit.currency}</Paragraph>
+                        <Paragraph><strong>Дата выдачи:</strong> {moment(credit.issued_at).format('DD.MM.YYYY')}</Paragraph>
+                        <Paragraph><strong>Остаток:</strong> {credit.status === 'active' ? credit.sum : 0} {credit.currency}</Paragraph>
                         {(role === 'user' || role === 'admin') && (
-                            <Paragraph>
-                                <strong>Идентификатор сотрудника:</strong> {creditDetails.employeeId}
-                            </Paragraph>
+                            <Paragraph><strong>Сотрудник:</strong> {credit.employee_id}</Paragraph>
                         )}
                     </Col>
-                    <Col span={12} style={{textAlign: 'left'}}>
-                        <Paragraph>
-                            <strong>Процентная ставка:</strong> {credit.interestRate}
-                        </Paragraph>
-                        <Paragraph>
-                            <strong>Дата возврата:</strong> {moment(credit.returnDate).format('DD.MM.YYYY')}
-                        </Paragraph>
-                        <Paragraph>
-                            <strong>Крайний срок:</strong> {moment(credit.deadline).format('DD.MM.YYYY')}
-                        </Paragraph>
+                    <Col span={12}>
+                        <Paragraph><strong>Процентная ставка:</strong> {credit.percent}%</Paragraph>
+                        <Paragraph><strong>Дата возврата:</strong> {moment(credit.return_at).format('DD.MM.YYYY')}</Paragraph>
+                        <Paragraph><strong>Крайний срок:</strong> {moment(credit.return_at).format('DD.MM.YYYY')}</Paragraph>
                         {(role === 'employee' || role === 'admin') && (
-                            <Paragraph>
-                                <strong>Идентификатор пользователя:</strong> {credit.userId}
-                            </Paragraph>
+                            <Paragraph><strong>Пользователь:</strong> {credit.user_id}</Paragraph>
                         )}
                     </Col>
                 </Row>
             </Card>
-            <Card
-                title="История платежей"
-                style={{
-                    borderRadius: 12,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                    marginBottom: 24,
-                }}>
-                <HistoryPaymentsTabs payments={payments}  overdue={overdue} />
+
+            {/* История платежей */}
+            <Card title="История платежей" style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)', marginBottom: 24 }}>
+                <HistoryPaymentsTabs payments={payments} overdue={overdue} />
             </Card>
+
+            {/* Модальное окно для платежа */}
+            <PayForm
+                isVisible={isModalVisible}
+                onCancel={() => setIsModalVisible(false)}
+                onPay={handlePay}
+                currency={credit.currency} // Передаем валюту для отображения в форме
+            />
         </div>
     );
 };

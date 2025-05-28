@@ -94,7 +94,6 @@ const getDeals = async () => {
     }
 };
 
-// DEALS
 export // Получение списка сделок
 const getDealsOfUser = async (userID) => {
     try {
@@ -102,6 +101,46 @@ const getDealsOfUser = async (userID) => {
         return response.data;
     } catch (error) {
         console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+export // Получение списка сделок
+const getDealByID = async (dealId) => {
+    try {
+        const response = await apiClient.get(`/deals/${dealId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+
+export const getPayments = async (dealId) => {
+    try {
+        const response = await apiClient.get(`/deals/${dealId}/payments`);
+        return response.data; // Возвращаем данные ответа
+    } catch (error) {
+        console.error("Ошибка при получении платежей:", error);
+        throw error; // Передаем ошибку дальше
+    }
+};
+
+export const getDelays = async (dealId) => {
+    try {
+        const response = await apiClient.get(`/deals/${dealId}/delays`);
+        return response.data; // Возвращаем данные ответа
+    } catch (error) {
+        console.error("Ошибка при получении просрочек:", error);
+        throw error; // Передаем ошибку дальше
+    }
+};
+
+export const createPayment = async (dealId, paymentData) => {
+    try {
+        const response = await apiClient.post(`/deals/${dealId}/payments`,{amount: paymentData, method: 'card'});
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при создании платежа:", error);
         throw error;
     }
 };
