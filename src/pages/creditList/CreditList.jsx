@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import { Button, Card, Row, Col } from 'antd';
 import moment from 'moment';
+import {useNavigate} from "react-router-dom";
 
 const creditss = [
     {
@@ -34,13 +35,21 @@ const creditss = [
 
 const CreditList = ({ role = 'employee' }) => {
     const [credits, setCredits] = useState([])
+    const navigate = useNavigate();
     useEffect(() => {
         setCredits(creditss)
         // TODO Вызов запроса на получение списка кредитов
     }, []);
+
     return (
 
         <div style={{ padding: '24px', width: '900px', margin: '0 auto'}}>
+            <div style={{marginBottom: 25, textAlign: 'left'}}>
+                <Button key="back" onClick={() => navigate(-1)}>
+                    Назад
+                </Button>
+            </div>
+
             {credits.map(credit => (
                 <Card
                     key={credit.id} title={<p style={{ textAlign: 'left', fontSize: 16 }}>{`Кредит №${credit.id}`}</p>}
@@ -48,7 +57,11 @@ const CreditList = ({ role = 'employee' }) => {
                     extra={
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <span style={{ color: credit.remainingAmount === 0 ? 'green' : 'red' }}>Статус: {credit.remainingAmount === 0 ? 'Выплачен' : 'Не выплачен'}</span>
-                            <Button type="primary" size="middle" style={{ borderRadius: 4 }}>Перейти</Button>
+                            <Button type="primary" size="middle" style={{ borderRadius: 4 }} onClick={
+                                () => {
+                                    navigate(`/credits/${credit.id}`)
+                                }
+                            }>Перейти</Button>
                         </div>}>
                     <Row gutter={30}>
                         <Col span={12}>

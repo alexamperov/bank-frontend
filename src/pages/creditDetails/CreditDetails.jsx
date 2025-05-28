@@ -19,6 +19,7 @@ import React, {useEffect, useState} from 'react';
 import { Card, Typography, Row, Col, Button } from 'antd';
 import moment from 'moment';
 import HistoryPaymentsTabs from "../../components/historyPaymentTabs/historyPaymentsTabs.jsx";
+import {useNavigate} from "react-router-dom";
 
 
 const { Title, Paragraph } = Typography;
@@ -85,6 +86,7 @@ const CreditDetailsPage = ({ role = 'admin' }) => {
     const [overdue, setOverdue] = useState([])
     const [payments, setPayments] = useState([])
 
+    const navigate = useNavigate();
 
     useEffect(() => {
         setCredit(creditDetails)
@@ -93,6 +95,12 @@ const CreditDetailsPage = ({ role = 'admin' }) => {
     }, []);
     return (
         <div style={{ padding: '24px', width: '900px', margin: '0 auto' }}>
+            <div style={{display:"block", textAlign: "left", marginBottom: '25px'}}>
+                <Button key="back" onClick={() => navigate(-1)}>
+                    Назад
+                </Button>
+            </div>
+
             {/* Верхняя карточка */}
             <Card
                 style={{

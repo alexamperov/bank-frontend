@@ -10,8 +10,9 @@ import ApplyCreditForm from "./forms/applyCreditForm/ApplyCreditForm.jsx";
 import RegistrationForm from "./forms/auth/RegistrationForm.jsx";
 import AuthForm from "./forms/auth/AuthForm.jsx";
 import EmployeeList from "./pages/employee/EmployeeList.jsx";
+import EmployeeCreditList from "./components/DealsOfEmployee.jsx";
 function App() {
-    const [role] = useState('admin'); // Замените на реальную роль пользователя
+    const [role] = useState('employee'); // Замените на реальную роль пользователя
 
     return (
         <div>
@@ -30,8 +31,14 @@ function App() {
                             <Route path="/auth" element={<AuthForm />}/>
                             {
                                 role === 'admin' && (<Route path="/employees" element={<EmployeeList />}/>)
-                            }
 
+                            }
+                            {
+                                role === 'admin' && (<Route path="/employees/:employeeId/credits" element={<EmployeeCreditList />} />)
+                            }
+                            {
+                                role === 'admin' && (<Route path="/employees/:employeeId/credits/:creditId" element={<EmployeeCreditList />} />)
+                            }
                         </Routes>
                     </div>
                 </div>
