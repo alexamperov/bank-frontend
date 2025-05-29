@@ -46,7 +46,7 @@ function App() {
 
                             }
                             {
-                                role === 'admin' && (<Route path="/employees/:employeeId/credits" element={<EmployeeCreditList />} />)
+                                role === 'admin' && (<Route path="/employees/:employeeId/credits" element={<CreditList role={role} />} />)
                             }
                             {
                                 role === 'admin' && (<Route path="/employees/:employeeId/credits/:creditId" element={<EmployeeCreditList />} />)
