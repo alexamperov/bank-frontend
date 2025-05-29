@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Card, Row, Col } from 'antd';
 import moment from 'moment';
 import {useNavigate, useParams} from 'react-router-dom';
-import {getDeals, getDealsOfUser} from '../../api'; // Импортируем функцию getDeals
+import {getAllDeals, getDeals, getDealsByEmployeeID, getDealsOfEmployee, getDealsOfUser} from '../../api'; // Импортируем функцию getDeals
 
 const CreditList = ({ role  }) => {
     const [credits, setCredits] = useState([]); // Состояние для хранения кредитов
@@ -12,7 +12,7 @@ const CreditList = ({ role  }) => {
         // Вызываем функцию getDeals для получения списка кредитов
         const fetchCredits = async () => {
             try {
-                if (role === 'user' || role === 'employee'){
+                if (role === 'user'){
                     getDeals().then(
                         (data) => {
                             const mappedData = data.map((item) => ({
@@ -30,8 +30,47 @@ const CreditList = ({ role  }) => {
                             setCredits(mappedData);
                         }
                     ); // Получаем данные с бекенда
+                } else if (role === 'admin') {
+                    if (employeeId){
+                        getDealsOfEmployee(employeeId).then(
+                            (data) => {
+                                const mappedData = data.map((item) => ({
+                                    id: item.id,
+                                    date: item.issued_at, // Преобразуем issued_at в date
+                                    deadline: item.return_at, // Преобразуем return_at в deadline
+                                    initialAmount: item.sum, // Преобразуем sum в initialAmount
+                                    remainingAmount: item.status === 'active' ? item.sum : 0, // Остаток зависит от статуса
+                                    userId: item.user_id, // Преобразуем user_id в userId
+                                    employeeId: item.employee_id, // Преобразуем employee_id в employeeId
+                                    currency: item.currency, // Добавляем валюту
+                                    percent: item.percent, // Добавляем процент
+                                }));
+
+                                setCredits(mappedData);
+                            }
+                        ); // Получаем данные с бекенда
+                    } else {
+                        getAllDeals().then(
+                            (data) => {
+                                const mappedData = data.map((item) => ({
+                                    id: item.id,
+                                    date: item.issued_at, // Преобразуем issued_at в date
+                                    deadline: item.return_at, // Преобразуем return_at в deadline
+                                    initialAmount: item.sum, // Преобразуем sum в initialAmount
+                                    remainingAmount: item.status === 'active' ? item.sum : 0, // Остаток зависит от статуса
+                                    userId: item.user_id, // Преобразуем user_id в userId
+                                    employeeId: item.employee_id, // Преобразуем employee_id в employeeId
+                                    currency: item.currency, // Добавляем валюту
+                                    percent: item.percent, // Добавляем процент
+                                }));
+
+                                setCredits(mappedData);
+                            }
+                        );
+                    }
+
                 } else {
-                    getDealsOfUser(employeeId).then(
+                    getDealsByEmployeeID().then(
                         (data) => {
                             const mappedData = data.map((item) => ({
                                 id: item.id,

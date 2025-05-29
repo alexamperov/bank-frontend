@@ -80,13 +80,67 @@ export const getOwnApplications = async () => {
     }
 };
 
+export const getAllApplications = async () => {
+    try {
+        const response = await apiClient.get('/applications_all');
+        return response.data; // Возвращаем данные ответа
+    } catch (error) {
+        console.error("Ошибка при получении списка заявок:", error);
+        throw error; // Передаем ошибку дальше
+    }
+};
 
+export const rejectApply = async (applyId) => {
+    try {
+        const response = await apiClient.post(`/applications/${applyId}/reject`)
+        return response.data;
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+export const approveApply = async (applyId) => {
+    try {
+        const response = await apiClient.post(`/applications/${applyId}/approve`)
+        return response.data;
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 // DEALS
 export // Получение списка сделок
 const getDeals = async () => {
     try {
         const response = await apiClient.get('/deals');
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+
+// Получить список работников
+export const getEmployees = async () => {
+    const res = await apiClient.get('/employees');
+    return res.data;
+};
+
+
+export // Получение списка сделок
+const getDealsByEmployeeID = async () => {
+    try {
+        const response = await apiClient.get('/deals_employee');
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+export // Получение списка сделок
+const getDealsOfEmployee = async (employeeId) => {
+    try {
+        const response = await apiClient.get(`/deals_employee?employee_id=${employeeId}`);
         return response.data;
     } catch (error) {
         console.error("Ошибка при получении списка сделок:", error);
@@ -108,6 +162,17 @@ export // Получение списка сделок
 const getDealByID = async (dealId) => {
     try {
         const response = await apiClient.get(`/deals/${dealId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при получении списка сделок:", error);
+        throw error;
+    }
+};
+
+export // Получение списка сделок
+const getAllDeals = async (dealId) => {
+    try {
+        const response = await apiClient.get(`/deals_all`);
         return response.data;
     } catch (error) {
         console.error("Ошибка при получении списка сделок:", error);

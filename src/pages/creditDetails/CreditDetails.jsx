@@ -9,7 +9,7 @@ import HistoryPaymentsTabs from "../../components/historyPaymentTabs/historyPaym
 const { Title, Paragraph } = Typography;
 
 const CreditDetailsPage = ({ role = 'admin' }) => {
-    const [credit, setCredit] = useState(null);
+    const [credit, setCredit] = useState({});
     const [payments, setPayments] = useState([]);
     const [overdue, setOverdue] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false); // Состояние для модального окна
@@ -23,6 +23,7 @@ const CreditDetailsPage = ({ role = 'admin' }) => {
                 setCredit(dealData);
                 setPayments(await getPayments(id));
                 setOverdue(await getDelays(id));
+                console.log(dealData)
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
             }

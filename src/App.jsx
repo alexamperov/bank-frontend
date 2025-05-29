@@ -40,7 +40,7 @@ function App() {
                             <Route path="/credits" element={<CreditList role={role} />} />
                             <Route path="/credits/:id" element={<CreditDetailsPage role={role} />} />
                             <Route path="/" element={<HomePage />}/>
-
+                            <Route path="/apply" element={<ApplyCreditForm role={role} />} />
                             {
                                 role === 'admin' && (<Route path="/employees" element={<EmployeeList />}/>)
 

@@ -1,61 +1,80 @@
-// Форма:
-//      Сумма
-//      Дата возврата
-//      Кнопка: Подать
-//      Кнопка: Отмена
-//      Хранить стейт
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Input, DatePicker, Button, Card } from 'antd';
+import { createApplication } from "../../api.js";
+import { useNavigate } from "react-router-dom";
 
-const CreditApplicationForm = ({ onSend, onCancel }) => {
+const CreditApplicationForm = ({ onCancel }) => {
     const [form] = Form.useForm();
-    const [formData, setFormData] = useState({
-        amount: '',
-        returnDate: null,
-        interestRate: '',
-    });
+    const navigate = useNavigate();
 
-    const handleSubmit = (values) => {
-        onSend(values);
-        form.resetFields();
-    };
+    const handleSubmit = async (values) => {
+        try {
+            // Ремаппинг значений в формат API
+            const applicationData = {
+                sum: values.sum,
+                percent: values.percent,
+                returnAt: values.returnAt.format('YYYY-MM-DD'), // Форматируем дату
+            };
 
-    const handleCancel = () => {
-        form.resetFields();
-        onCancel();
+            await createApplication(applicationData);
+            form.resetFields();
+            navigate('/applications');
+        } catch (error) {
+            console.error("Ошибка при создании заявки:", error);
+        }
     };
 
     return (
-        <Card title={<p>Подать заявку</p>} style={{ width: '500px' }}>
-            <Form form={form} layout="vertical" style={{ width: 400, margin: '0 auto', padding: '12px' }} onFinish={handleSubmit}>
-                <Form.Item label="Сумма" name="amount" rules={[{ required: true, message: 'Укажите сумму!' }]}>
+        <Card title={<p>Подать заявку</p>} style={{ width: '500px', margin: "auto" }}>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                style={{ width: 400, margin: '0 auto', padding: '12px' }}
+            >
+                {/* Поле суммы */}
+                <Form.Item
+                    label="Сумма"
+                    name="sum"
+                    rules={[{ required: true, message: 'Укажите сумму!' }]}
+                >
+                    <Input type="number" placeholder="Введите сумму" />
+                </Form.Item>
+
+                {/* Поле процентной ставки */}
+                <Form.Item
+                    label="Желаемая процентная ставка"
+                    name="percent"
+                    rules={[{ required: true, message: 'Укажите процентную ставку!' }]}
+                >
                     <Input
                         type="number"
-                        placeholder="Введите сумму"
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                        placeholder="Введите процентную ставку (например, 12)"
+                        addonAfter="%"
                     />
                 </Form.Item>
 
-                <Form.Item label="Желаемая процентная ставка" name="interestRate" rules={[{ required: true, message: 'Укажите процентную ставку!' }]}>
-                    <Input
-                        type="text"
-                        placeholder="Введите процентную ставку (например, 12%)"
-                        onChange={(e) => setFormData({ ...formData, interestRate: e.target.value })}
-                    />
-                </Form.Item>
-
-                <Form.Item label="Дата возврата" name="returnDate" rules={[{ required: true, message: 'Укажите дату!' }]}>
+                {/* Поле даты возврата */}
+                <Form.Item
+                    label="Дата возврата"
+                    name="returnAt"
+                    rules={[{ required: true, message: 'Укажите дату!' }]}
+                >
                     <DatePicker
                         style={{ width: '100%' }}
                         placeholder="Выберите дату"
-                        onChange={(date) => setFormData({ ...formData, returnDate: date })}
-                        onOk={(date) => setFormData({ ...formData, returnDate: date })}
+                        format="DD.MM.YYYY"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
-                    <Button onClick={handleCancel}>Отмена</Button>
+                {/* Кнопки управления */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16, marginTop: 24 }}>
+                    <Button onClick={() => {
+                        form.resetFields();
+                        onCancel();
+                    }}>
+                        Отмена
+                    </Button>
                     <Button type="primary" htmlType="submit">
                         Подать
                     </Button>

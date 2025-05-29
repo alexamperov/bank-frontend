@@ -1,275 +1,179 @@
-// Список заявок для клиента
-// Пока не понадобится, не буду заявку выносить в компонент
-// Заявка:
-//      Статус: [Одобрено/Отказано/Нет ответа]
-//      Идентификатор
-//      Сумма
-//      [Если нет результата]
-//          Кнопка: Отменить заявку
-//
-/*
-import React from 'react';
-import { Card, Button, Typography } from 'antd';
-import { CloseCircleOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import React, { useState, useEffect } from 'react';
+import { Button, Card } from "antd";
+import moment from "moment";
+import { CheckCircleOutlined, CloseCircleOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+    approveApply,
+    getAllApplications,
+    getOwnApplications, rejectApply/*, approveApplication, rejectApplication, cancelApplication*/
+} from '../../api';
 
-const { Title, Paragraph } = Typography;
+const ApplicationCard = ({ application, role, onApprove, onReject, onCancel }) => {
+    const handleCancelClick = () => onCancel(application.id);
 
-// Пример данных для демонстрации
-const applications = [
-    {
-        id: 1,
-        status: 'Нет ответа',
-        submissionDate: '2023-05-15',
-        amount: 150000,
-        returnDate: '2024-05-15',
-    },
-    {
-        id: 2,
-        status: 'Одобрено',
-        submissionDate: '2023-05-10',
-        amount: 200000,
-        returnDate: '2024-05-10',
-    },
-    {
-        id: 3,
-        status: 'Отказано',
-        submissionDate: '2023-05-08',
-        amount: 100000,
-        returnDate: '2024-05-08',
-    },
-    {
-        id: 4,
-        status: 'Нет ответа',
-        submissionDate: '2023-05-20',
-        amount: 120000,
-        returnDate: '2024-05-20',
-    },
-];
-
-const ApplicationCard = ({ application }) => {
-    const handleCancel = () => {
-        console.log(`Отмена заявки ${application.id}`);
-        // Логика отмены заявки
+    const statusColor = {
+        'Одобрено': 'green',
+        'Отказано': 'red',
+        'Нет ответа': 'orange'
     };
-
-    const extraContent = (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
-                style={{
-                    color:
-                        application.status === 'Одобрено' ? 'green' :
-                            application.status === 'Отказано' ? 'red' :
-                                'orange',
-                    fontWeight: 'bold',
-                }}
-            >
-                {application.status}
-            </span>
-            {application.status !== 'Одобрено' && application.status !== 'Отказано' && (
-                <Button
-                    type="primary"
-                    icon={<CloseCircleOutlined />}
-                    onClick={handleCancel}
-                >
-                    Отменить
-                </Button>
-            )}
-        </div>
-    );
 
     return (
         <Card
             title={<p style={{ textAlign: 'left' }}>Заявка № {application.id}</p>}
-            extra={extraContent} style={{marginBottom: 10, borderRadius: 12, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',}}>
-            <div style={{display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left'}}>
+            extra={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ color: statusColor[application.status], fontWeight: 'bold' }}>
+                        {application.status}
+                    </span>
 
-                <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
-                    <strong>Сумма:</strong> {application.amount} ₽
+                    {role === 'employee' && application.status === 'Нет ответа' && (
+                        <>
+                            <Button
+                                type="primary"
+                                icon={<CheckCircleOutlined />}
+                                onClick={() => onApprove(application.id)}
+                                style={{ backgroundColor: '#52c41a' }}
+                            >
+                                Одобрить
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<CloseOutlined />}
+                                onClick={() => onReject(application.id)}
+                                style={{ backgroundColor: '#ff4d4f' }}
+                            >
+                                Отказать
+                            </Button>
+                        </>
+                    )}
                 </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
-                    <strong>Дата подачи:</strong> {moment(application.submissionDate).format('DD.MM.YYYY')}
-                </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
-                    <strong>Дата планируемого возврата:</strong> {moment(application.returnDate).format('DD.MM.YYYY')}
-                </div>
-            </div>
-        </Card>
-    );
-};
-
-const ApplicationsList = () => {
-    return (
-        <div style={{padding: '24px', width: '900px', margin: '0 auto'}}>
-            <div style={{display: 'flex', flexDirection: 'column', gap: 24}}>
-                {applications.map(app => (
-                    <ApplicationCard key={app.id} application={app} />
-                ))}
-            </div>
-        </div>
-    );
-};
-
-export default ApplicationsList;*/
-
-import React, {useState} from 'react';
-import {Button, Card} from "antd";
-import moment from "moment";
-import {CheckCircleOutlined, CloseCircleOutlined, CloseOutlined} from "@ant-design/icons";
-
-// TODO Фильтруем заявки на бекенде
-
-const ApplicationCard = ({ application, role = 'employee', onApprove, onReject, onCancel }) => {
-    const handleApprove = () => {
-        onApprove(application.id);
-    };
-
-    const handleReject = () => {
-        onReject(application.id);
-    };
-
-    const handleCancel = () => {
-        onCancel(application.id);
-    };
-
-    let extraContent = null;
-
-    if (role === 'user') {
-        extraContent = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span
-                    style={{
-                        color:
-                            application.status === 'Одобрено' ? 'green' :
-                                application.status === 'Отказано' ? 'red' :
-                                    'orange',
-                        fontWeight: 'bold',
-                    }}
-                >
-                    {application.status}
-                </span>
-                {application.status !== 'Одобрено' && application.status !== 'Отказано' && (
-                    <Button
-                        type="primary"
-                        icon={<CloseCircleOutlined />}
-                        onClick={handleCancel}
-                    >
-                        Отменить
-                    </Button>
-                )}
-            </div>
-        );
-    } else if (role === 'employee') {
-        extraContent = (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Button
-                    type="primary"
-                    icon={<CheckCircleOutlined />}
-                    onClick={handleApprove}
-                    style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                >
-                    Одобрить
-                </Button>
-                <Button
-                    type="primary"
-                    icon={<CloseOutlined />}
-                    onClick={handleReject}
-                    style={{ backgroundColor: '#ff4d4f', borderColor: '#ff4d4f' }}
-                >
-                    Отказать
-                </Button>
-            </div>
-        );
-    }
-
-    return (
-        <Card
-            title={<p style={{ textAlign: 'left' }}>Заявка № {application.id}</p>} extra={extraContent}
-            style={{marginBottom: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',}}>
+            }
+            style={{ marginBottom: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' }}
+        >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <strong>Сумма:</strong> {application.amount} ₽
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <strong>Процентная ставка:</strong> {application.percent}%
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <strong>Дата подачи:</strong> {moment(application.submissionDate).format('DD.MM.YYYY')}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <strong>Дата планируемого возврата:</strong> {moment(application.returnDate).format('DD.MM.YYYY')}
+                    <strong>Дата возврата:</strong> {moment(application.returnDate).format('DD.MM.YYYY')}
                 </div>
             </div>
         </Card>
     );
 };
+
 const ApplicationsList = ({ role }) => {
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const [applications, setApplications] = useState([
-        {
-            id: 1,
-            status: 'Нет ответа',
-            submissionDate: '2023-05-15',
-            amount: 150000,
-            returnDate: '2024-05-15',
-        },
-        {
-            id: 2,
-            status: 'Одобрено',
-            submissionDate: '2023-05-10',
-            amount: 200000,
-            returnDate: '2024-05-10',
-        },
-        {
-            id: 3,
-            status: 'Отказано',
-            submissionDate: '2023-05-08',
-            amount: 100000,
-            returnDate: '2024-05-08',
-        },
-        {
-            id: 4,
-            status: 'Нет ответа',
-            submissionDate: '2023-05-20',
-            amount: 120000,
-            returnDate: '2024-05-20',
-        },
-    ]);
+    useEffect(() => {
+        const fetchApplications = async () => {
+            try {
+                setLoading(true);
+                if (role === 'user'){
+                    const data = await getOwnApplications();
+                    const formattedData = data.map(app => ({
+                        id: app.id,
+                        status: mapStatus(app.status),
+                        submissionDate: app.created_at,
+                        amount: app.sum,
+                        returnDate: app.return_at,
+                        percent: app.percent,
+                    }));
+                    setApplications(formattedData);
+                    setLoading(false);
+                } else if (role === 'employee'){
+                    const data = await getAllApplications();
+                    const formattedData = data.map(app => ({
+                        id: app.id,
+                        status: mapStatus(app.status),
+                        submissionDate: app.created_at,
+                        amount: app.sum,
+                        returnDate: app.return_at,
+                        percent: app.percent,
+                    }));
+                    setApplications(formattedData);
+                    setLoading(false);
+                }
 
-    const handleApprove = (appId) => {
-        console.log(`Заявка ${appId} одобрена`);
-        setApplications(prevApps => prevApps.map(app =>
-            app.id === appId ? { ...app, status: 'Одобрено' } : app
-        ));
-        // TODO вызываем запрос здесь
+            } catch (err) {
+                setError(err);
+                setLoading(false);
+            }
+        };
+
+        fetchApplications();
+    }, [role]);
+
+    const mapStatus = (apiStatus) => {
+        switch (apiStatus) {
+            case 'approved': return 'Одобрено';
+            case 'rejected': return 'Отказано';
+            case 'pending': return 'Нет ответа';
+            default: return 'Неизвестный статус';
+        }
     };
 
-    const handleReject = (appId) => {
-        console.log(`Заявка ${appId} отклонена`);
-        setApplications(prevApps => prevApps.map(app =>
-            app.id === appId ? { ...app, status: 'Отказано' } : app
-        ));
-        // TODO вызываем запрос здесь
+    const handleApprove = async (appId) => {
+        try {
+            await approveApply(appId); // Вызываем функцию из api.js
+            setApplications(prevApps =>
+                prevApps.map(app =>
+                    app.id === appId ? { ...app, status: 'Одобрено' } : app
+                )
+            );
+        } catch (error) {
+            console.error("Ошибка при одобрении заявки:", error);
+        }
     };
 
-    const handleCancel = (appId) => {
-        console.log(`Заявка ${appId} отменена`);
-        setApplications(prevApps => prevApps.filter(app => app.id !== appId));
-        // TODO вызываем запрос здесь
+    const handleReject = async (appId) => {
+        try {
+            await rejectApply(appId); // Вызываем функцию из api.js
+            setApplications(prevApps =>
+                prevApps.map(app =>
+                    app.id === appId ? { ...app, status: 'Отказано' } : app
+                )
+            );
+        } catch (error) {
+            console.error("Ошибка при отказе заявки:", error);
+        }
+    };
+
+    const handleCancel = async (appId) => {
+        try {
+            await cancelApplication(appId);
+            setApplications(prev => prev.filter(app => app.id !== appId));
+        } catch (error) {
+            console.error("Ошибка при отмене:", error);
+        }
     };
 
     return (
         <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                {applications.map(app => (
-                    <ApplicationCard
-                        key={app.id}
-                        application={app}
-                        role={role}
-                        onApprove={handleApprove}
-                        onReject={handleReject}
-                        onCancel={handleCancel}
-                    />
-                ))}
-            </div>
+            {loading && <div>Загрузка...</div>}
+            {error && <div>Ошибка: {error.message}</div>}
+            {!loading && !error && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    {applications.map(app => (
+                        <ApplicationCard
+                            key={app.id}
+                            application={app}
+                            role={role}
+                            onApprove={handleApprove}
+                            onReject={handleReject}
+                            onCancel={handleCancel}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
